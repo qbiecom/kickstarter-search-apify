@@ -209,7 +209,7 @@
           "type": "string",
           "description": "Status of the project",
           "default": "All",
-          "enum": ["All", "Live", "Successful"],
+          "enum": ["All", "Live", "Successful", "Upcoming"],
           "editor": "select"
       },
       "pledged": {
