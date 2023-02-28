@@ -173,6 +173,7 @@ const categories = [
 const statuses = {
     Live: 'live',
     Successful: 'successful',
+    Upcoming: 'upcoming',
 };
 
 const pledges = [
