@@ -77,9 +77,9 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
 
     // SAVING NEEDED NUMBER OF ITEMS
     if (projectsToSave.length > 0) {
-        const newProjects = projectsToSave.filter((c) => !savedProjectIds.has(c.id));
+        const newProjects = projectsToSave.filter((c) => !savedProjectIds.includes(c.id));
         newProjects.forEach((project) => {
-            savedProjectIds.add(project.id);
+            savedProjectIds.push(project.id);
         });
 
         await Apify.pushData(newProjects);
