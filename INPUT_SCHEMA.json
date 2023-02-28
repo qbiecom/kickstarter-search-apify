@@ -242,7 +242,7 @@
           "description": "Allows you to change the ",
           "default": "newest",
           "prefill": "newest",
-          "enum": ["newest", "popularity", "end_date", "most_funded", "most_backed"],
+          "enum": ["newest", "popularity", "end_date", "most_funded", "most_backed", "magic"],
           "editor": "select"
       },
       "datasetName": {

@@ -204,6 +204,7 @@ const sorts = [
     'end_date',
     'most_funded',
     'most_backed',
+    'magic',
 ];
 
 module.exports = {

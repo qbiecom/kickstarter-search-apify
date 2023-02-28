@@ -65,7 +65,9 @@ async function parseInput(input) {
         log.warning('Key-value store does not contain INPUT. Actor will be stopped.');
         return;
     }
-    const queryParams = {};
+    const queryParams = {
+        woe_id: 0
+    };
 
     // FILTER OUT EMPTY FILTER VALUES
     const filledInFilters = {};
