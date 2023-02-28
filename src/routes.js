@@ -14,6 +14,7 @@ exports.handleStart = async ({ request, session }, query, requestQueue, proxyCon
     const totalProjects = 0;
     const savedProjects = 0;
     const maximumResults = Math.min(maxResults, MAX_PAGES * PROJECTS_PER_PAGE);
+    const savedProjectIds = [];
 
     const params = querystring.stringify({
         ...query,
@@ -32,13 +33,14 @@ exports.handleStart = async ({ request, session }, query, requestQueue, proxyCon
             totalProjects,
             savedProjects,
             maximumResults,
+            savedProjectIds,
         },
     });
 };
 
 exports.handlePagination = async ({ request, session }, requestQueue, proxyConfiguration) => {
     let { page, totalProjects, savedProjects } = request.userData;
-    const { cookies, maximumResults } = request.userData;
+    const { cookies, maximumResults, savedProjectIds } = request.userData;
 
     // MAKING REQUEST => JSON OBJECT IN RESPONSE
     const { body } = await requestAsBrowser({
@@ -72,11 +74,21 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
 
     // GETTING NEW SEED (TOKEN) FROM JSON
     const { seed } = body;
+
     // SAVING NEEDED NUMBER OF ITEMS
     if (projectsToSave.length > 0) {
-        await Apify.pushData(projectsToSave);
-        log.info(`Page ${page}: Saved ${projectsToSave.length} projects.`);
-        savedProjects += projectsToSave.length;
+        const newProjects = projectsToSave.filter((c) => !savedProjectIds.has(c.id));
+        newProjects.forEach((project) => {
+            savedProjectIds.add(project.id);
+        });
+
+        await Apify.pushData(newProjects);
+        log.info(`Page ${page}: Saved ${newProjects.length} projects.`);
+        if (newProjects.length !== projectsToSave.length) {
+            log.info(`Found ${projectsToSave.length - newProjects.length} duplicates in the request.`);
+        }
+
+        savedProjects += newProjects.length;
     }
     // FLAG FROM JSON
     const hasMoreResults = body.has_more;
@@ -94,6 +106,7 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
                 savedProjects,
                 maximumResults,
                 totalProjects,
+                savedProjectIds,
             },
         });
     }
