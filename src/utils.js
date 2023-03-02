@@ -12,6 +12,7 @@ function cleanProject(project) {
     const cleanedProject = {
         ...project,
         photo: project.photo?.full ?? null,
+        image: project.photo?.full ?? null,
         creatorId: project.creator?.id ?? null,
         creatorName: project.creator?.name ?? null,
         creatorAvatar: project.creator?.avatar?.medium ?? null,
