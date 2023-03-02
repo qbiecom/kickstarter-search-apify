@@ -11,7 +11,7 @@ const { utils: { log, requestAsBrowser } } = Apify;
 function cleanProject(project) {
     const cleanedProject = {
         ...project,
-        photo: project.photo?.project?.photo?.full ?? null,
+        photo: project.photo?.full ?? null,
         creatorId: project.creator?.id ?? null,
         creatorName: project.creator?.name ?? null,
         creatorAvatar: project.creator?.avatar?.medium ?? null,
