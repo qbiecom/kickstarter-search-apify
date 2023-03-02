@@ -1,5 +1,11 @@
 Since the official Kickstarter API does not provide structured output of search results, you can get list of Kickstarter news and projects with this Kickstarter Scraper.
 
+## This Fork
+This fork has the following fixes/changes:
+- Fixes an issue where the image/photo of a project is not included correctly. See https://console.apify.com/actors/h9kEJvo62ufE8PkSC#/issues/qNFoNx3PwZLS7bBGo/comments
+- Changed 'photo' to 'image'
+- Adds the image to the 'description' so that it can be parsed by RSS feed readers. I have only tested this with feedly but hopefully others should work too.
+
 ## Features
 
 - scrape Kickstarter data up to **2400 items/per run**
