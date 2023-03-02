@@ -11,7 +11,6 @@ const { utils: { log, requestAsBrowser } } = Apify;
 function cleanProject(project) {
     const cleanedProject = {
         ...project,
-        photo: project.photo?.full ?? null,
         image: project.photo?.full ?? null,
         creatorId: project.creator?.id ?? null,
         creatorName: project.creator?.name ?? null,
@@ -24,7 +23,7 @@ function cleanProject(project) {
         categorySlug: project.category?.slug ?? null,
         url: project.urls?.web?.project ?? null,
         title: project.name,
-        description: project.blurb,
+        description: `<img src="${project.photo?.full}"> ${project.blurb}`,
         link: project.urls?.web?.project ?? null,
         pubDate: moment.unix(project.launched_at).format(DATE_FORMAT),
         created_at_formatted: moment.unix(project.created_at).format(DATE_FORMAT),
