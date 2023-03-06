@@ -7,7 +7,7 @@
           "title": "Query",
           "type": "string",
           "description": "What to search Kickstarter for",
-          "editor": "textfield",
+          "editor": "textfield"
       },
       "maxResults": {
           "title": "Maximum results",
