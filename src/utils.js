@@ -169,9 +169,11 @@ async function getToken(url, session, proxyConfiguration) {
     const $ = cheerio.load(html.body);
     const seed = $('.js-project-group[data-seed]').attr('data-seed');
     const cookies = (html.headers['set-cookie'] || []).map((s) => s.split(';', 2)[0]).join('; ');
+    if (!seed) {
+        log.info('Could not resolve seed. Using default.');
+        seed = '2801307';
+    }
     
-    log.info('Token and cookies fetched.', { seed, cookies });
-
     return {
         seed,
         cookies,
