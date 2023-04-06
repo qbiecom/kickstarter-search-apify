@@ -167,11 +167,10 @@ async function getToken(url, session, proxyConfiguration) {
     });
 
     const $ = cheerio.load(html.body);
-    let seed = $('.js-project-group[data-seed]').attr('data-seed');
+    const seed = $('.js-project-group[data-seed]').attr('data-seed');
     const cookies = (html.headers['set-cookie'] || []).map((s) => s.split(';', 2)[0]).join('; ');
     if (!seed) {
-        log.info('Could not resolve seed. Using default.');
-        seed = '2801307';
+        throw new Error('Could not resolve seed. Will retry...')
     }
     
     return {
