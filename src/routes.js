@@ -51,7 +51,7 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
             'X-Requested-With': 'XMLHttpRequest',
             Cookie: cookies,
         },
-        json: true,
+        responseType: 'json',
     });
 
     // ON THE FIRST PAGE WE ARE CHECKING IF WE REACHED THE LIMIT
