@@ -51,7 +51,7 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
             'X-Requested-With': 'XMLHttpRequest',
             Cookie: cookies,
         },
-        json: true,
+        responseType: 'json',
     });
 
     // ON THE FIRST PAGE WE ARE CHECKING IF WE REACHED THE LIMIT
@@ -69,7 +69,7 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
         projectsToSave = body.projects.slice(0, maximumResults - savedProjects)
             .map(cleanProject);
     } catch (e) {
-        new Error('The page didn\'t load as expected, Will retry...');
+        throw new Error('The page didn\'t load as expected, Will retry...');
     }
 
     // GETTING NEW SEED (TOKEN) FROM JSON
