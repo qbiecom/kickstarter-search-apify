@@ -7,8 +7,9 @@ const { statuses, categories, pledges, goals, raised, sorts } = require('./filte
 
 const { utils: { log, requestAsBrowser } } = Apify;
 
-// 1. FUNCTION TO REMOVE NO NEED KEYS FROM THE ITEM OBJECT
+// Function to remove unnecessary keys from the item object
 function cleanProject(project) {
+    // Create a new object with cleaned properties
     const cleanedProject = {
         ...project,
         image: project.photo?.full ?? null,
@@ -30,6 +31,7 @@ function cleanProject(project) {
         launched_at_formatted: moment.unix(project.launched_at).format(DATE_FORMAT),
     };
 
+    // Remove unnecessary properties from the cleanedProject object
     delete cleanedProject.creator;
     delete cleanedProject.location;
     delete cleanedProject.category;
@@ -39,27 +41,28 @@ function cleanProject(project) {
     return cleanedProject;
 }
 
-// 2. DEALING WITH LOCATION FROM THE INPUT - CALLING ANOTHER ACTOR
+// Function to process location from the input by calling another actor
 async function processLocation(location) {
     log.info(`Quering kickstarter for location ID of "${location}"...`);
-    // CALLING SEPARATE ACTOR TO GET ID OF THE LOCATION
+
+    // Call a separate actor to get the location ID
     const run = await Apify.call(LOCATION_SEARCH_ACTOR_ID, { query: location });
     if (run.status !== 'SUCCEEDED') {
         log.warning(`Actor ${LOCATION_SEARCH_ACTOR_ID} did not finish correctly. Please check your "location" field in the input, and try again.`);
         return;
     }
-    // GETTING LOCATIONS
+    // Get locations
     const { locations } = run.output.body;
     if (!locations.length) {
         log.warning(`Location "${location}" was not found. Please check your "location" field in the input, and try again.`);
         return;
     }
-    // GETTING ONLY THE FIRST ONE
+    // Get the first location
     log.info(`Location found, woe_id is - ${locations[0].id}`);
     return locations[0].id;
 }
 
-// 3. CHECKING THE INPUT
+// Function to check the input and generate queryParams based on filled filters
 async function parseInput(input) {
     if (!input) {
         log.warning('Key-value store does not contain INPUT. Actor will be stopped.');
@@ -157,7 +160,7 @@ async function parseInput(input) {
     return queryParams;
 }
 
-// 4. FIRST REQUEST => GETTING TOKEN AND COOKIES. THERE ARE A LOT OF BLOCKS WITHOUT IT.
+// Function to get token and cookies for requests
 async function getToken(url, session, proxyConfiguration) {
     const proxyUrl = proxyConfiguration.newUrl(session.id);
     // Query the url and load csrf token from it
@@ -166,6 +169,7 @@ async function getToken(url, session, proxyConfiguration) {
         proxyUrl,
     });
 
+    // Load the seed and cookies from the HTML response
     const $ = cheerio.load(html.body);
     const seed = $('.js-project-group[data-seed]').attr('data-seed');
     const cookies = (html.headers['set-cookie'] || []).map((s) => s.split(';', 2)[0]).join('; ');
@@ -176,7 +180,7 @@ async function getToken(url, session, proxyConfiguration) {
     };
 }
 
-// 5. FUNCTION TO INFORM ABOUT THE ITEM LIMIT
+// Function to inform about the item limit on Kickstarter search
 /**
  * Kickstarter has limit of 200 pages (2400 projects) for a search
  * this functions outputs explanation of this to console.
