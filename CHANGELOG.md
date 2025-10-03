@@ -15,6 +15,7 @@
   - `@apify/eslint-config`: ^0.1.3 → ^0.4.0
   - `eslint`: ^7.0.0 → ^8.0.0
 - Added dependencies:
+  - `crawlee`: ^3.0.0 (web scraping library, contains BasicCrawler and other crawlers)
   - `got-scraping`: ^3.2.0 (replaces `requestAsBrowser` functionality)
 
 ### Fixed
@@ -24,6 +25,8 @@
 
 ### Migration Notes
 If you have any custom code extending this actor, update your imports:
-- `const Apify = require('apify')` → `const { Actor } = require('apify')`
-- `Apify.utils.log` → `Actor.log`
+- `const Apify = require('apify')` → `const { Actor, log } = require('apify')`
+- `const { BasicCrawler } = require('crawlee')` - Crawlers moved to separate Crawlee package
+- `Apify.utils.log` → Import `log` directly from `apify` package
 - `Apify.utils.requestAsBrowser` → Use `got-scraping` library directly (see [got-scraping docs](https://github.com/apify/got-scraping))
+- `Apify.BasicCrawler` → `BasicCrawler` from `crawlee` package
