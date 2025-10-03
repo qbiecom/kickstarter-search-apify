@@ -204,7 +204,7 @@ async function parseInput(input) {
 
 // Function to get token and cookies for requests
 async function getToken(url, session, proxyConfiguration) {
-    const proxyUrl = proxyConfiguration.newUrl(session.id);
+    const proxyUrl = await proxyConfiguration.newUrl(session.id);
     
     log.info('Fetching token and cookies', {
         url,

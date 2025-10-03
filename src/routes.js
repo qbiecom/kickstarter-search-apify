@@ -63,9 +63,10 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
     });
 
     // MAKING REQUEST => JSON OBJECT IN RESPONSE
+    const proxyUrl = await proxyConfiguration.newUrl(session.id);
     const response = await gotScraping({
         url: request.url,
-        proxyUrl: proxyConfiguration.newUrl(session.id),
+        proxyUrl,
         headers: {
             Accept: 'application/json, text/javascript, */*; q=0.01',
             'X-Requested-With': 'XMLHttpRequest',
