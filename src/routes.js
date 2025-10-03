@@ -1,8 +1,6 @@
-const { Actor } = require('apify');
+const { Actor, log } = require('apify');
 const querystring = require('querystring');
 const gotScraping = require('got-scraping');
-
-const { log } = Actor;
 
 const { cleanProject, getToken, notifyAboutMaxResults } = require('./utils');
 const { BASE_URL, MAX_PAGES, PROJECTS_PER_PAGE } = require('./consts');

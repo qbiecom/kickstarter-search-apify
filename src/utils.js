@@ -1,12 +1,10 @@
-const { Actor } = require('apify');
+const { Actor, log } = require('apify');
 const moment = require('moment');
 const cheerio = require('cheerio');
 const gotScraping = require('got-scraping');
 
 const { EMPTY_SELECT, LOCATION_SEARCH_ACTOR_ID, DEFAULT_SORT_ORDER, DATE_FORMAT } = require('./consts');
 const { statuses, categories, pledges, goals, raised, sorts } = require('./filters');
-
-const { log } = Actor;
 
 // Function to remove unnecessary keys from the item object
 function cleanProject(project) {
