@@ -6,9 +6,9 @@
 - **BREAKING**: Upgraded to Apify SDK v3 (from v2.0.6)
   - Migrated from `Apify` to `Actor` namespace
   - Updated all API calls: `Apify.main()` → `Actor.main()`, `Apify.getInput()` → `Actor.getInput()`, etc.
-  - Removed SQLite dependency (better-sqlite3-with-prebuilds), fixing Node 18 build issues
+  - Removed SQLite dependency (better-sqlite3-with-prebuilds), fixing build issues
   - Replaced `requestAsBrowser` with `got-scraping` library (as per v3 migration guide)
-- Updated Node.js base image to version 18 (from 16)
+- Updated Node.js base image to version 20 (from 16)
 - Updated dependencies:
   - `cheerio`: ^1.0.0-rc.9 → ^1.0.0
   - `moment`: ^2.29.1 → ^2.30.1
@@ -19,7 +19,8 @@
 
 ### Fixed
 - Resolved Docker build failures on Apify platform caused by missing Python dependency for native module compilation
-- Improved compatibility with Node.js 18
+- Fixed undici/File runtime error by upgrading to Node.js 20 (Node 18.20.8 has compatibility issues with undici)
+- Improved compatibility with Node.js 20
 
 ### Migration Notes
 If you have any custom code extending this actor, update your imports:
