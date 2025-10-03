@@ -10,6 +10,19 @@ const { log } = Apify.utils;
 Apify.main(async () => {
     const requestQueue = await Apify.openRequestQueue();
     const input = await Apify.getInput();
+    
+    log.info('Actor started with input:', { 
+        query: input?.query,
+        category: input?.category,
+        status: input?.status,
+        maxResults: input?.maxResults,
+        location: input?.location,
+        pledged: input?.pledged,
+        goal: input?.goal,
+        raised: input?.raised,
+        sort: input?.sort,
+    });
+    
     // GETTING PARAMS FROM THE INPUT
     const queryParameters = await parseInput(input);
     let { maxResults } = input;
@@ -17,8 +30,14 @@ Apify.main(async () => {
 
     const proxy = await proxyConfiguration({ proxyConfig });
     if (!maxResults) maxResults = 200 * PROJECTS_PER_PAGE;
+    
+    log.info('Configuration parsed:', { maxResults, queryParameters });
+    
     const params = querystring.stringify(queryParameters);
     const firstUrl = `${BASE_URL}${params}&google_chrome_workaround`;
+    
+    log.info('Starting search with URL:', { firstUrl });
+    
     // ADDING TO THE QUEUE FIRST PAGE TO GET TOKEN
     await requestQueue.addRequest({
         url: firstUrl,
@@ -52,7 +71,13 @@ Apify.main(async () => {
             request,
             error,
         }) => {
-            log.error(`Request ${request.url} failed repeatedly, running out of retries (Error: ${error.message})`);
+            log.error(`Request ${request.url} failed repeatedly, running out of retries`, {
+                url: request.url,
+                label: request.userData?.label,
+                errorMessage: error.message,
+                errorStack: error.stack,
+                retryCount: request.retryCount,
+            });
         },
     });
     log.info('Starting crawler');

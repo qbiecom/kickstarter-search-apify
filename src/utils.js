@@ -43,22 +43,34 @@ function cleanProject(project) {
 
 // Function to process location from the input by calling another actor
 async function processLocation(location) {
-    log.info(`Quering kickstarter for location ID of "${location}"...`);
+    log.info(`Quering kickstarter for location ID of "${location}"...`, {
+        locationQuery: location,
+    });
 
     // Call a separate actor to get the location ID
     const run = await Apify.call(LOCATION_SEARCH_ACTOR_ID, { query: location });
     if (run.status !== 'SUCCEEDED') {
-        log.warning(`Actor ${LOCATION_SEARCH_ACTOR_ID} did not finish correctly. Please check your "location" field in the input, and try again.`);
+        log.warning(`Actor ${LOCATION_SEARCH_ACTOR_ID} did not finish correctly. Please check your "location" field in the input, and try again.`, {
+            actorId: LOCATION_SEARCH_ACTOR_ID,
+            runStatus: run.status,
+            locationQuery: location,
+        });
         return;
     }
     // Get locations
     const { locations } = run.output.body;
     if (!locations.length) {
-        log.warning(`Location "${location}" was not found. Please check your "location" field in the input, and try again.`);
+        log.warning(`Location "${location}" was not found. Please check your "location" field in the input, and try again.`, {
+            locationQuery: location,
+            locationsFound: 0,
+        });
         return;
     }
     // Get the first location
-    log.info(`Location found, woe_id is - ${locations[0].id}`);
+    log.info(`Location found, woe_id is - ${locations[0].id}`, {
+        locationId: locations[0].id,
+        locationName: locations[0].name || location,
+    });
     return locations[0].id;
 }
 
@@ -68,6 +80,11 @@ async function parseInput(input) {
         log.warning('Key-value store does not contain INPUT. Actor will be stopped.');
         return;
     }
+    
+    log.info('Parsing input parameters', { 
+        inputKeys: Object.keys(input),
+    });
+    
     const queryParams = {
         woe_id: 0
     };
@@ -78,6 +95,10 @@ async function parseInput(input) {
         const filterValue = (typeof (input[key]) === 'string') ? input[key].trim() : input[key];
         if (!filterValue || filterValue === EMPTY_SELECT) return;
         filledInFilters[key] = filterValue;
+    });
+
+    log.info('Filtered input parameters', { 
+        filledInFilters: Object.keys(filledInFilters),
     });
 
     // process search term
@@ -92,7 +113,10 @@ async function parseInput(input) {
 
         if (!foundCategories.length) {
             log.warning(`Input parameter "category" contains invalid value: "${filledInFilters.category}".\n
-            Please check the input. Actor will be stopped`);
+            Please check the input. Actor will be stopped`, {
+                providedCategory: filledInFilters.category,
+                availableCategories: categories.length,
+            });
             return;
         }
         queryParams.category_id = foundCategories[0].id;
@@ -103,7 +127,10 @@ async function parseInput(input) {
         const state = statuses[filledInFilters.status];
         if (!state) {
             log.warning(`Input parameter "status" contains invalid value: "${filledInFilters.state}".\n
-            Please check the input. Actor will be stopped.`);
+            Please check the input. Actor will be stopped.`, {
+                providedStatus: filledInFilters.status,
+                availableStatuses: Object.keys(statuses),
+            });
             return;
         }
         queryParams.state = state;
@@ -114,7 +141,10 @@ async function parseInput(input) {
         const pledged = pledges.indexOf(filledInFilters.pledged.toLowerCase());
         if (pledged === -1) {
             log.warning(`Input parameter "pledged" contains invalid value: "${filledInFilters.pledged}".\n
-            Please check the input. Actor will be stopped.`);
+            Please check the input. Actor will be stopped.`, {
+                providedPledged: filledInFilters.pledged,
+                availablePledges: pledges,
+            });
             return;
         }
         queryParams.pledged = pledged;
@@ -124,7 +154,10 @@ async function parseInput(input) {
     if (filledInFilters.goal) {
         const goal = goals.indexOf(filledInFilters.goal.toLowerCase());
         if (goal === -1) {
-            log.warning(`Input parameter goal contains invalid value: "${filledInFilters.goal}". Please check the input. Actor will be stopped.`);
+            log.warning(`Input parameter goal contains invalid value: "${filledInFilters.goal}". Please check the input. Actor will be stopped.`, {
+                providedGoal: filledInFilters.goal,
+                availableGoals: goals,
+            });
             return;
         }
         queryParams.goal = goal;
@@ -135,7 +168,10 @@ async function parseInput(input) {
         const amountRaised = raised.indexOf(filledInFilters.raised.toLowerCase());
         if (amountRaised === -1) {
             log.warning(`Input parameter "raised" contains invalid value: "${filledInFilters.raised}".\n
-            Please check the input. Actor will be finished.`);
+            Please check the input. Actor will be finished.`, {
+                providedRaised: filledInFilters.raised,
+                availableRaised: raised,
+            });
             return;
         }
         queryParams.raised = amountRaised;
@@ -145,7 +181,10 @@ async function parseInput(input) {
     if (filledInFilters.sort) {
         const sort = sorts.indexOf(filledInFilters.sort.toLowerCase());
         if (sort === -1) {
-            log.warning(`Input parameter "sort" contains invalid value: "${filledInFilters.sort}". Please check the input. Actor will be stopped`);
+            log.warning(`Input parameter "sort" contains invalid value: "${filledInFilters.sort}". Please check the input. Actor will be stopped`, {
+                providedSort: filledInFilters.sort,
+                availableSorts: sorts,
+            });
             return;
         }
         queryParams.sort = filledInFilters.sort.toLowerCase();
@@ -157,12 +196,22 @@ async function parseInput(input) {
 
     queryParams.page = 1;
 
+    log.info('Input parsing completed', { 
+        queryParams,
+    });
+
     return queryParams;
 }
 
 // Function to get token and cookies for requests
 async function getToken(url, session, proxyConfiguration) {
     const proxyUrl = proxyConfiguration.newUrl(session.id);
+    
+    log.info('Fetching token and cookies', {
+        url,
+        sessionId: session.id,
+    });
+    
     // Query the url and load csrf token from it
     const html = await requestAsBrowser({
         url,
@@ -174,8 +223,20 @@ async function getToken(url, session, proxyConfiguration) {
     const seed = $('.js-project-group[data-seed]').attr('data-seed');
     const cookies = (html.headers['set-cookie'] || []).map((s) => s.split(';', 2)[0]).join('; ');
     if (!seed) {
+        log.error('Could not resolve seed from page', {
+            url,
+            hasBody: !!html.body,
+            bodyLength: html.body ? html.body.length : 0,
+            statusCode: html.statusCode,
+        });
         throw new Error('Could not resolve seed. Will retry...')
     }
+    
+    log.info('Token and cookies extracted successfully', {
+        hasSeed: !!seed,
+        hasCookies: !!cookies,
+        cookieCount: cookies ? cookies.split(';').length : 0,
+    });
     
     return {
         seed,
@@ -197,6 +258,11 @@ function notifyAboutMaxResults(foundProjects, limit) {
     log.info(`| Will be output: ${limit} projects.`);
     log.info('| ');
     log.info('|');
+    log.warning('Search result limit reached', {
+        foundProjects,
+        limit,
+        message: 'Kickstarter has a limit of 200 pages (2400 projects) per search. To get more results, refine your search query.',
+    });
 }
 
 const proxyConfiguration = async ({
@@ -206,11 +272,23 @@ const proxyConfiguration = async ({
     blacklist = ['GOOGLESERP'],
     hint = [],
 }) => {
+    log.info('Configuring proxy', {
+        required,
+        force,
+        hasProxyConfig: !!proxyConfig,
+    });
+    
     const configuration = await Apify.createProxyConfiguration(proxyConfig);
 
     // this works for custom proxyUrls
     if (Apify.isAtHome() && required) {
         if (!configuration || (!configuration.usesApifyProxy && (!configuration.proxyUrls || !configuration.proxyUrls.length)) || !configuration.newUrl()) {
+            log.error('Proxy configuration validation failed', {
+                hasConfiguration: !!configuration,
+                usesApifyProxy: configuration?.usesApifyProxy,
+                hasProxyUrls: !!(configuration?.proxyUrls && configuration.proxyUrls.length),
+                canGenerateUrl: !!configuration?.newUrl(),
+            });
             throw new Error('\n=======\nYou must use Apify proxy or custom proxy URLs\n\n=======');
         }
     }
@@ -220,6 +298,10 @@ const proxyConfiguration = async ({
         // only when actually using Apify proxy it needs to be checked for the groups
         if (configuration && configuration.usesApifyProxy) {
             if (blacklist.some((blacklisted) => (configuration.groups || []).includes(blacklisted))) {
+                log.error('Blacklisted proxy group detected', {
+                    blacklist,
+                    configuredGroups: configuration.groups,
+                });
                 throw new Error(`\n=======\nThese proxy groups cannot be used in this actor. Choose other group or contact support@apify.com to give you proxy trial:\n\n*  ${blacklist.join('\n*  ')}\n\n=======`);
             }
 
@@ -229,6 +311,11 @@ const proxyConfiguration = async ({
             }
         }
     }
+
+    log.info('Proxy configuration completed', {
+        usesApifyProxy: configuration?.usesApifyProxy,
+        groups: configuration?.groups,
+    });
 
     return configuration;
 };
