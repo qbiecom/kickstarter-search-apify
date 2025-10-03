@@ -1,15 +1,15 @@
-const Apify = require('apify');
+const { Actor } = require('apify');
 const querystring = require('querystring');
 
 const { parseInput, proxyConfiguration } = require('./src/utils');
 const { BASE_URL, PROJECTS_PER_PAGE } = require('./src/consts');
 const { handleStart, handlePagination } = require('./src/routes');
 
-const { log } = Apify.utils;
+const { log } = Actor;
 
-Apify.main(async () => {
-    const requestQueue = await Apify.openRequestQueue();
-    const input = await Apify.getInput();
+Actor.main(async () => {
+    const requestQueue = await Actor.openRequestQueue();
+    const input = await Actor.getInput();
     
     log.info('Actor started with input:', { 
         query: input?.query,
@@ -51,7 +51,7 @@ Apify.main(async () => {
         },
     });
     // CRAWLER
-    const crawler = new Apify.BasicCrawler({
+    const crawler = new Actor.BasicCrawler({
         requestQueue,
         maxConcurrency: 1,
         useSessionPool: true,

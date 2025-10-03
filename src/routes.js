@@ -1,7 +1,8 @@
-const Apify = require('apify');
+const { Actor } = require('apify');
 const querystring = require('querystring');
+const gotScraping = require('got-scraping');
 
-const { utils: { log, requestAsBrowser } } = Apify;
+const { log } = Actor;
 
 const { cleanProject, getToken, notifyAboutMaxResults } = require('./utils');
 const { BASE_URL, MAX_PAGES, PROJECTS_PER_PAGE } = require('./consts');
@@ -64,7 +65,7 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
     });
 
     // MAKING REQUEST => JSON OBJECT IN RESPONSE
-    const { body } = await requestAsBrowser({
+    const response = await gotScraping({
         url: request.url,
         proxyUrl: proxyConfiguration.newUrl(session.id),
         headers: {
@@ -74,6 +75,7 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
         },
         responseType: 'json',
     });
+    const body = response.body;
 
     // ON THE FIRST PAGE WE ARE CHECKING IF WE REACHED THE LIMIT
     if (page === 1) {
@@ -118,7 +120,7 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
             savedProjectIds.push(project.id);
         });
 
-        await Apify.pushData(newProjects);
+        await Actor.pushData(newProjects);
         log.info(`Page ${page}: Saved ${newProjects.length} projects.`, {
             page,
             newProjectsCount: newProjects.length,

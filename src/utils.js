@@ -1,11 +1,12 @@
-const Apify = require('apify');
+const { Actor } = require('apify');
 const moment = require('moment');
 const cheerio = require('cheerio');
+const gotScraping = require('got-scraping');
 
 const { EMPTY_SELECT, LOCATION_SEARCH_ACTOR_ID, DEFAULT_SORT_ORDER, DATE_FORMAT } = require('./consts');
 const { statuses, categories, pledges, goals, raised, sorts } = require('./filters');
 
-const { utils: { log, requestAsBrowser } } = Apify;
+const { log } = Actor;
 
 // Function to remove unnecessary keys from the item object
 function cleanProject(project) {
@@ -48,7 +49,7 @@ async function processLocation(location) {
     });
 
     // Call a separate actor to get the location ID
-    const run = await Apify.call(LOCATION_SEARCH_ACTOR_ID, { query: location });
+    const run = await Actor.call(LOCATION_SEARCH_ACTOR_ID, { query: location });
     if (run.status !== 'SUCCEEDED') {
         log.warning(`Actor ${LOCATION_SEARCH_ACTOR_ID} did not finish correctly. Please check your "location" field in the input, and try again.`, {
             actorId: LOCATION_SEARCH_ACTOR_ID,
@@ -213,21 +214,22 @@ async function getToken(url, session, proxyConfiguration) {
     });
     
     // Query the url and load csrf token from it
-    const html = await requestAsBrowser({
+    const response = await gotScraping({
         url,
         proxyUrl,
+        responseType: 'text',
     });
 
     // Load the seed and cookies from the HTML response
-    const $ = cheerio.load(html.body);
+    const $ = cheerio.load(response.body);
     const seed = $('.js-project-group[data-seed]').attr('data-seed');
-    const cookies = (html.headers['set-cookie'] || []).map((s) => s.split(';', 2)[0]).join('; ');
+    const cookies = (response.headers['set-cookie'] || []).map((s) => s.split(';', 2)[0]).join('; ');
     if (!seed) {
         log.error('Could not resolve seed from page', {
             url,
-            hasBody: !!html.body,
-            bodyLength: html.body ? html.body.length : 0,
-            statusCode: html.statusCode,
+            hasBody: !!response.body,
+            bodyLength: response.body ? response.body.length : 0,
+            statusCode: response.statusCode,
         });
         throw new Error('Could not resolve seed. Will retry...')
     }
@@ -268,7 +270,7 @@ function notifyAboutMaxResults(foundProjects, limit) {
 const proxyConfiguration = async ({
     proxyConfig,
     required = true,
-    force = Apify.isAtHome(),
+    force = Actor.isAtHome(),
     blacklist = ['GOOGLESERP'],
     hint = [],
 }) => {
@@ -278,10 +280,10 @@ const proxyConfiguration = async ({
         hasProxyConfig: !!proxyConfig,
     });
     
-    const configuration = await Apify.createProxyConfiguration(proxyConfig);
+    const configuration = await Actor.createProxyConfiguration(proxyConfig);
 
     // this works for custom proxyUrls
-    if (Apify.isAtHome() && required) {
+    if (Actor.isAtHome() && required) {
         if (!configuration || (!configuration.usesApifyProxy && (!configuration.proxyUrls || !configuration.proxyUrls.length)) || !configuration.newUrl()) {
             log.error('Proxy configuration validation failed', {
                 hasConfiguration: !!configuration,
@@ -307,7 +309,7 @@ const proxyConfiguration = async ({
 
             // specific non-automatic proxy groups like RESIDENTIAL, not an error, just a hint
             if (hint.length && !hint.some((group) => (configuration.groups || []).includes(group))) {
-                Apify.utils.log.info(`\n=======\nYou can pick specific proxy groups for better experience:\n\n*  ${hint.join('\n*  ')}\n\n=======`);
+                log.info(`\n=======\nYou can pick specific proxy groups for better experience:\n\n*  ${hint.join('\n*  ')}\n\n=======`);
             }
         }
     }
