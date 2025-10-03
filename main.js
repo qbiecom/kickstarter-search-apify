@@ -1,4 +1,5 @@
 const { Actor, log } = require('apify');
+const { BasicCrawler } = require('crawlee');
 const querystring = require('querystring');
 
 const { parseInput, proxyConfiguration } = require('./src/utils');
@@ -49,7 +50,7 @@ Actor.main(async () => {
         },
     });
     // CRAWLER
-    const crawler = new Actor.BasicCrawler({
+    const crawler = new BasicCrawler({
         requestQueue,
         maxConcurrency: 1,
         useSessionPool: true,
