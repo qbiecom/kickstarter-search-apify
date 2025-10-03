@@ -1,17 +1,15 @@
-const { Actor } = require('apify');
+const { Actor, log } = require('apify');
 const querystring = require('querystring');
 
 const { parseInput, proxyConfiguration } = require('./src/utils');
 const { BASE_URL, PROJECTS_PER_PAGE } = require('./src/consts');
 const { handleStart, handlePagination } = require('./src/routes');
 
-const { log } = Actor;
-
 Actor.main(async () => {
     const requestQueue = await Actor.openRequestQueue();
     const input = await Actor.getInput();
     
-    log.info('Actor started with input:', { 
+    log.info('Actor started with input:', {
         query: input?.query,
         category: input?.category,
         status: input?.status,
