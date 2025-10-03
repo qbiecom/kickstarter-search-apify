@@ -55,6 +55,8 @@ Actor.main(async () => {
         maxConcurrency: 1,
         useSessionPool: true,
         maxRequestRetries: 1000,
+        minConcurrency: 1,
+        maxRequestsPerMinute: 30,
         requestHandler: async (context) => {
             const { url, userData: { label } } = context.request;
             log.info('Page opened.', { label, url });
