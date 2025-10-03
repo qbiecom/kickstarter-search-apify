@@ -55,7 +55,7 @@ Actor.main(async () => {
         maxConcurrency: 1,
         useSessionPool: true,
         maxRequestRetries: 1000,
-        handleRequestFunction: async (context) => {
+        requestHandler: async (context) => {
             const { url, userData: { label } } = context.request;
             log.info('Page opened.', { label, url });
             // eslint-disable-next-line default-case
@@ -66,7 +66,7 @@ Actor.main(async () => {
                     return handlePagination(context, requestQueue, proxy);
             }
         },
-        handleFailedRequestFunction: async ({
+        failedRequestHandler: async ({
             request,
             error,
         }) => {
