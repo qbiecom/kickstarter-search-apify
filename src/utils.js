@@ -1,7 +1,14 @@
 const { Actor, log } = require('apify');
 const moment = require('moment');
 const cheerio = require('cheerio');
-import { gotScraping } from 'got-scraping';
+/* got-scraping v3+ is ESM-only. Dynamically import it at runtime so this CommonJS project keeps working.
+   getGotScraping() returns a module object with { gotScraping } and caches the import. */
+let _gotScrapingModule = null;
+async function getGotScraping() {
+    if (_gotScrapingModule) return _gotScrapingModule;
+    _gotScrapingModule = await import('got-scraping');
+    return _gotScrapingModule;
+}
 
 const { EMPTY_SELECT, LOCATION_SEARCH_ACTOR_ID, DEFAULT_SORT_ORDER, DATE_FORMAT } = require('./consts');
 const { statuses, categories, pledges, goals, raised, sorts } = require('./filters');
@@ -212,6 +219,7 @@ async function getToken(url, session, proxyConfiguration) {
     });
     
     // Query the url and load csrf token from it
+    const { gotScraping } = await getGotScraping();
     const response = await gotScraping({
         url,
         proxyUrl,

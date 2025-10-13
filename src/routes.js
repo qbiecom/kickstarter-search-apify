@@ -1,6 +1,13 @@
 const { Actor, log } = require('apify');
 const querystring = require('querystring');
-import { gotScraping } from 'got-scraping';
+
+// got-scraping v3+ is ESM-only. Dynamically import it at runtime so this CommonJS project keeps working.
+let _gotScrapingModule = null;
+async function getGotScraping() {
+    if (_gotScrapingModule) return _gotScrapingModule;
+    _gotScrapingModule = await import('got-scraping');
+    return _gotScrapingModule;
+}
 
 const { cleanProject, getToken, notifyAboutMaxResults } = require('./utils');
 const { BASE_URL, MAX_PAGES, PROJECTS_PER_PAGE } = require('./consts');
@@ -75,6 +82,7 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
 
     let response;
     try {
+        const { gotScraping } = await getGotScraping();
         response = await gotScraping({
             url: request.url,
             proxyUrl,
