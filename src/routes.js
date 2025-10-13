@@ -64,16 +64,34 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
 
     // MAKING REQUEST => JSON OBJECT IN RESPONSE
     const proxyUrl = await proxyConfiguration.newUrl(session.id);
-    const response = await gotScraping({
-        url: request.url,
-        proxyUrl,
-        headers: {
-            Accept: 'application/json, text/javascript, */*; q=0.01',
-            'X-Requested-With': 'XMLHttpRequest',
-            Cookie: cookies,
-        },
-        responseType: 'json',
-    });
+    const logKickstarterBlocked = () => {
+        log.error('Received HTTP 403 from Kickstarter. Requests are likely being blocked. Switch to residential proxies.', {
+            url: request.url,
+            sessionId: session.id,
+            proxyUrl,
+            retryCount: request.retryCount,
+        });
+    };
+
+    let response;
+    try {
+        response = await gotScraping({
+            url: request.url,
+            proxyUrl,
+            headers: {
+                Accept: 'application/json, text/javascript, */*; q=0.01',
+                'X-Requested-With': 'XMLHttpRequest',
+                Cookie: cookies,
+            },
+            responseType: 'json',
+        });
+    } catch (error) {
+        if (error.response?.statusCode === 403) {
+            logKickstarterBlocked();
+        }
+        throw error;
+    }
+
     const body = response.body;
 
     // ON THE FIRST PAGE WE ARE CHECKING IF WE REACHED THE LIMIT
