@@ -96,11 +96,26 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
     } catch (error) {
         if (error.response?.statusCode === 403) {
             logKickstarterBlocked();
+            session.retire();
         }
         throw error;
     }
 
     const body = response.body;
+    if (!Array.isArray(body.projects)) {
+        const bodyType = Array.isArray(body) ? 'array' : typeof body;
+        log.warning('Kickstarter returned an unexpected pagination response. Will retry with a new session/proxy.', {
+            page,
+            url: request.url,
+            sessionId: session.id,
+            statusCode: response.statusCode,
+            bodyType,
+            bodyKeys: body && typeof body === 'object' ? Object.keys(body).slice(0, 20) : undefined,
+            bodyPreview: typeof body === 'string' ? body.slice(0, 300) : undefined,
+        });
+        session.retire();
+        throw new Error('Kickstarter returned an unexpected pagination response. Will retry...');
+    }
 
     // ON THE FIRST PAGE WE ARE CHECKING IF WE REACHED THE LIMIT
     if (page === 1) {

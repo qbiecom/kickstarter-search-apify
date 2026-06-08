@@ -229,12 +229,14 @@ async function getToken(url, session, proxyConfiguration) {
     const seed = $('.js-project-group[data-seed]').attr('data-seed');
     const cookies = (response.headers['set-cookie'] || []).map((s) => s.split(';', 2)[0]).join('; ');
     if (!seed) {
-        log.error('Could not resolve seed from page', {
+        log.error('Could not resolve seed from page. Will retry with a new session/proxy.', {
             url,
             hasBody: !!response.body,
             bodyLength: response.body ? response.body.length : 0,
             statusCode: response.statusCode,
+            sessionId: session.id,
         });
+        if (response.statusCode === 403) session.retire();
         throw new Error('Could not resolve seed. Will retry...')
     }
     
