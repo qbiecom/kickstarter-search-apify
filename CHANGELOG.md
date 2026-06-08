@@ -4,11 +4,21 @@
 
 ### Changed
 - Updated the Apify Actor base image from Node.js 20 to Node.js 24 LTS.
-- Updated runtime dependencies: `apify` to `^3.7.2`, `crawlee` to `^3.17.0`, `got-scraping` to `^4.2.1`, and `cheerio` to `^1.2.0`.
+- Updated runtime dependencies:
+  - `apify`: `^3.5.0` -> `^3.7.2`
+  - `crawlee`: `^3.15.1` -> `^3.17.0`
+  - `got-scraping`: `^4.1.2` -> `^4.2.1`
+  - `cheerio`: `^1.1.2` -> `^1.2.0`
 - Replaced deprecated Docker npm install flags with `--omit=dev --omit=optional` to avoid npm 10 build warnings.
 - Await proxy URL generation during proxy validation for compatibility with current Apify/Crawlee proxy APIs.
 
 ### Fixed
+- Resolved production npm audit vulnerabilities in transitive dependencies:
+  - `axios`: `1.12.2` -> `1.17.0`
+  - `follow-redirects`: `1.15.11` -> `1.16.0`
+  - `brace-expansion`: `2.0.2` -> `2.1.1`
+  - `minimatch`: `9.0.5` -> `9.0.9`
+  - `ws`: `8.18.3` -> `8.21.0`
 - Removed the default `woe_id=0` query parameter from Kickstarter discovery URLs. Location searches still add `woe_id` when a location is provided.
 - Retire blocked sessions when Kickstarter returns a 403 while fetching the initial search seed, allowing retries to rotate to a new proxy/session.
 - Improved pagination response handling when Kickstarter returns an unexpected non-projects response, logging useful diagnostics and retrying with a new proxy/session instead of failing with a `projects.slice` error.
