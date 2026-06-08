@@ -91,9 +91,7 @@ async function parseInput(input) {
         inputKeys: Object.keys(input),
     });
     
-    const queryParams = {
-        woe_id: 0
-    };
+    const queryParams = {};
 
     // FILTER OUT EMPTY FILTER VALUES
     const filledInFilters = {};
