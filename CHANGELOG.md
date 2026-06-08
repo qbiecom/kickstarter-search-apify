@@ -3,6 +3,7 @@
 ## [0.2.1] - 2026-06-08
 
 ### Changed
+- Updated the Apify Actor base image from Node.js 20 to Node.js 24 LTS.
 - Updated runtime dependencies: `apify` to `^3.7.2`, `crawlee` to `^3.17.0`, `got-scraping` to `^4.2.1`, and `cheerio` to `^1.2.0`.
 - Replaced deprecated Docker npm install flags with `--omit=dev --omit=optional` to avoid npm 10 build warnings.
 - Await proxy URL generation during proxy validation for compatibility with current Apify/Crawlee proxy APIs.
