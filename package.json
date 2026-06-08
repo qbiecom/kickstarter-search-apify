@@ -3,10 +3,10 @@
 	"version": "0.2.1",
 	"description": "Kickstarter scraper",
 	"dependencies": {
-		"apify": "^3.5.0",
-		"cheerio": "^1.1.2",
-		"crawlee": "^3.15.1",
-		"got-scraping": "^4.1.2",
+		"apify": "^3.7.2",
+		"cheerio": "^1.2.0",
+		"crawlee": "^3.17.0",
+		"got-scraping": "^4.2.1",
 		"moment": "^2.30.1"
 	},
 	"devDependencies": {

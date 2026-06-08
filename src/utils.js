@@ -290,12 +290,13 @@ const proxyConfiguration = async ({
 
     // this works for custom proxyUrls
     if (Actor.isAtHome() && required) {
-        if (!configuration || (!configuration.usesApifyProxy && (!configuration.proxyUrls || !configuration.proxyUrls.length)) || !configuration.newUrl()) {
+        const proxyUrl = configuration ? await configuration.newUrl() : null;
+        if (!configuration || (!configuration.usesApifyProxy && (!configuration.proxyUrls || !configuration.proxyUrls.length)) || !proxyUrl) {
             log.error('Proxy configuration validation failed', {
                 hasConfiguration: !!configuration,
                 usesApifyProxy: configuration?.usesApifyProxy,
                 hasProxyUrls: !!(configuration?.proxyUrls && configuration.proxyUrls.length),
-                canGenerateUrl: !!configuration?.newUrl(),
+                canGenerateUrl: !!proxyUrl,
             });
             throw new Error('\n=======\nYou must use Apify proxy or custom proxy URLs\n\n=======');
         }
