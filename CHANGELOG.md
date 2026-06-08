@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1] - 2026-06-08
+
+### Fixed
+- Removed the default `woe_id=0` query parameter from Kickstarter discovery URLs. Location searches still add `woe_id` when a location is provided.
+- Retire blocked sessions when Kickstarter returns a 403 while fetching the initial search seed, allowing retries to rotate to a new proxy/session.
+- Improved pagination response handling when Kickstarter returns an unexpected non-projects response, logging useful diagnostics and retrying with a new proxy/session instead of failing with a `projects.slice` error.
+
 ## [0.2.0] - 2025-10-03
 
 ### Changed
