@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.23] - 2026-07-02
+
+### Changed
+- Switched Kickstarter discovery pagination to the current `discover/advanced.json` endpoint.
+- Updated discover query serialization to match Kickstarter's current frontend, including bracket-array parameters such as `state[]` and `category_id[]`.
+- Defaulted status searches to Kickstarter's current discover states: `upcoming`, `live`, and `late_pledge`.
+- Reused the last successful pagination proxy for the next page to reduce retry churn while still rotating proxies after failures.
+
+### Fixed
+- Removed the dependency on the removed `.js-project-group[data-seed]` markup for pagination startup.
+- Made missing seed extraction non-fatal now that the current JSON endpoint does not require a seed parameter.
+- Fixed category input matching when the category is provided as a numeric ID.
+- Preserved cookies from the initial discovery request for pagination requests.
+- Updated pagination URL construction to increment `page` on the current JSON URL.
+
 ## [0.2.1] - 2026-06-08
 
 ### Changed

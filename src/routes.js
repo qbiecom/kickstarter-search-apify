@@ -57,7 +57,7 @@ exports.handleStart = async ({ request, session }, query, requestQueue, proxyCon
 
 exports.handlePagination = async ({ request, session }, requestQueue, proxyConfiguration) => {
     let { page, totalProjects, savedProjects } = request.userData;
-    const { cookies, maximumResults, savedProjectIds } = request.userData;
+    const { cookies, maximumResults, savedProjectIds, lastSuccessfulProxyUrl } = request.userData;
 
     log.info('Handling pagination page', { 
         page, 
@@ -68,7 +68,9 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
     });
 
     // MAKING REQUEST => JSON OBJECT IN RESPONSE
-    const proxyUrl = await proxyConfiguration.newUrl(session.id);
+    const proxyUrl = request.retryCount === 0 && lastSuccessfulProxyUrl
+        ? lastSuccessfulProxyUrl
+        : await proxyConfiguration.newUrl(session.id);
     const logKickstarterBlocked = () => {
         log.error('Received HTTP 403 from Kickstarter. Requests are likely being blocked. Switch to residential proxies.', {
             url: request.url,
@@ -194,6 +196,7 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
                 totalProjects,
                 savedProjectIds,
                 cookies,
+                lastSuccessfulProxyUrl: proxyUrl,
             },
         });
     } else {
