@@ -13,6 +13,44 @@ async function getGotScraping() {
 const { EMPTY_SELECT, LOCATION_SEARCH_ACTOR_ID, DEFAULT_SORT_ORDER, DATE_FORMAT } = require('./consts');
 const { statuses, categories, pledges, goals, raised, sorts } = require('./filters');
 
+function extractSeedFromHtml(html) {
+    const $ = cheerio.load(html);
+    const seedFromAttribute = $('[data-seed]').first().attr('data-seed');
+    if (seedFromAttribute) return seedFromAttribute;
+
+    const seedPatterns = [
+        /["']seed["']\s*:\s*["']?([0-9.]+)["']?/i,
+        /[?&]seed=([0-9.]+)/i,
+        /data-seed=["']([0-9.]+)["']/i,
+    ];
+
+    for (const pattern of seedPatterns) {
+        const match = html.match(pattern);
+        if (match) return match[1];
+    }
+
+    return null;
+}
+
+function createSeed() {
+    return Math.random().toFixed(6).slice(2);
+}
+
+function stringifyDiscoverQuery(query) {
+    const params = new URLSearchParams();
+
+    Object.entries(query).forEach(([key, value]) => {
+        if (value === undefined || value === null || value === '') return;
+        if (Array.isArray(value)) {
+            value.forEach((item) => params.append(`${key}[]`, item));
+            return;
+        }
+        params.append(key, value);
+    });
+
+    return params.toString();
+}
+
 // Function to remove unnecessary keys from the item object
 function cleanProject(project) {
     // Create a new object with cleaned properties
@@ -112,7 +150,7 @@ async function parseInput(input) {
     if (filledInFilters.category) {
         const fromInputLowerCase = filledInFilters.category.toLowerCase();
         const foundCategories = categories.filter((category) => {
-            return fromInputLowerCase.category === category.id || fromInputLowerCase === category.slug.toLowerCase();
+            return fromInputLowerCase === String(category.id) || fromInputLowerCase === category.slug.toLowerCase();
         });
 
         if (!foundCategories.length) {
@@ -123,7 +161,7 @@ async function parseInput(input) {
             });
             return;
         }
-        queryParams.category_id = foundCategories[0].id;
+        queryParams.category_id = [foundCategories[0].id];
     }
 
     // process status
@@ -137,7 +175,9 @@ async function parseInput(input) {
             });
             return;
         }
-        queryParams.state = state;
+        queryParams.state = [state];
+    } else {
+        queryParams.state = ['upcoming', 'live', 'late_pledge'];
     }
 
     // process pledged
@@ -151,7 +191,7 @@ async function parseInput(input) {
             });
             return;
         }
-        queryParams.pledged = pledged;
+        queryParams.pledged = [pledged];
     }
 
     // process goal
@@ -164,7 +204,7 @@ async function parseInput(input) {
             });
             return;
         }
-        queryParams.goal = goal;
+        queryParams.goal = [goal];
     }
 
     // process raised
@@ -225,9 +265,17 @@ async function getToken(url, session, proxyConfiguration) {
     });
 
     // Load the seed and cookies from the HTML response
-    const $ = cheerio.load(response.body);
-    const seed = $('.js-project-group[data-seed]').attr('data-seed');
+    const extractedSeed = extractSeedFromHtml(response.body);
+    const seed = extractedSeed || createSeed();
     const cookies = (response.headers['set-cookie'] || []).map((s) => s.split(';', 2)[0]).join('; ');
+    if (!extractedSeed) {
+        log.info('Could not resolve seed from page markup. Continuing with current discover JSON endpoint.', {
+            url,
+            statusCode: response.statusCode,
+            bodyLength: response.body ? response.body.length : 0,
+            sessionId: session.id,
+        });
+    }
     if (!seed) {
         log.error('Could not resolve seed from page. Will retry with a new session/proxy.', {
             url,
@@ -333,6 +381,7 @@ module.exports = {
     cleanProject,
     parseInput,
     getToken,
+    stringifyDiscoverQuery,
     notifyAboutMaxResults,
     proxyConfiguration,
 };

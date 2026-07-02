@@ -1,8 +1,7 @@
 const { Actor, log } = require('apify');
 const { BasicCrawler } = require('crawlee');
-const querystring = require('querystring');
 
-const { parseInput, proxyConfiguration } = require('./src/utils');
+const { parseInput, proxyConfiguration, stringifyDiscoverQuery } = require('./src/utils');
 const { BASE_URL, PROJECTS_PER_PAGE } = require('./src/consts');
 const { handleStart, handlePagination } = require('./src/routes');
 
@@ -32,7 +31,7 @@ Actor.main(async () => {
     
     log.info('Configuration parsed:', { maxResults, queryParameters });
     
-    const params = querystring.stringify(queryParameters);
+    const params = stringifyDiscoverQuery(queryParameters);
     const firstUrl = `${BASE_URL}${params}&google_chrome_workaround`;
     
     log.info('Starting search with URL:', { firstUrl });

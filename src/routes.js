@@ -1,5 +1,4 @@
 const { Actor, log } = require('apify');
-const querystring = require('querystring');
 
 // got-scraping v3+ is ESM-only. Dynamically import it at runtime so this CommonJS project keeps working.
 let _gotScrapingModule = null;
@@ -9,8 +8,8 @@ async function getGotScraping() {
     return _gotScrapingModule;
 }
 
-const { cleanProject, getToken, notifyAboutMaxResults } = require('./utils');
-const { BASE_URL, MAX_PAGES, PROJECTS_PER_PAGE } = require('./consts');
+const { cleanProject, getToken, notifyAboutMaxResults, stringifyDiscoverQuery } = require('./utils');
+const { DISCOVER_JSON_URL, MAX_PAGES, PROJECTS_PER_PAGE } = require('./consts');
 
 exports.handleStart = async ({ request, session }, query, requestQueue, proxyConfig, maxResults) => {
     log.info('Handling START phase - getting TOKEN and COOKIES', { 
@@ -29,12 +28,11 @@ exports.handleStart = async ({ request, session }, query, requestQueue, proxyCon
     const maximumResults = Math.min(maxResults, MAX_PAGES * PROJECTS_PER_PAGE);
     const savedProjectIds = [];
 
-    const params = querystring.stringify({
+    const params = stringifyDiscoverQuery({
         ...query,
         page,
-        seed,
     });
-    const listUrl = `${BASE_URL}${params}`;
+    const listUrl = `${DISCOVER_JSON_URL}${params}`;
 
     log.info('Adding first pagination page to queue', { 
         listUrl, 
@@ -150,9 +148,6 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
         throw new Error('The page didn\'t load as expected, Will retry...');
     }
 
-    // GETTING NEW SEED (TOKEN) FROM JSON
-    const { seed } = body;
-
     // SAVING NEEDED NUMBER OF ITEMS
     if (projectsToSave.length > 0) {
         const newProjects = projectsToSave.filter((c) => !savedProjectIds.includes(c.id));
@@ -184,9 +179,10 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
             totalProjects,
             remaining: totalProjects - savedProjects,
         });
-        // UPDATING IN THE CURRENT LINK PAGE NUMBER AND SEED AND ADDING IT TO THE QUEUE
-        const nextPage = request.url.replace(request.url.match(/page=([0-9.]+)/)[0], `page=${page}`)
-            .replace(request.url.match(/seed=([0-9.]+)/)[0], `seed=${seed}`);
+        // UPDATING IN THE CURRENT LINK PAGE NUMBER AND ADDING IT TO THE QUEUE
+        const nextPageUrl = new URL(request.url);
+        nextPageUrl.searchParams.set('page', page);
+        const nextPage = nextPageUrl.toString();
         // ADDING TO THE QUEUE
         await requestQueue.addRequest({
             url: nextPage,
@@ -197,6 +193,7 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
                 maximumResults,
                 totalProjects,
                 savedProjectIds,
+                cookies,
             },
         });
     } else {
