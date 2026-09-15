@@ -91,6 +91,16 @@ During the run, the actor will output messages letting the you know what is goin
 
 Once input is properly parsed the actor will load first page of results and output information about the number of found results and how many results are remaining. Every 10th page load will output prediction of how long it will take for the run to finish.
 
+The actor reads Kickstarter's `discover/advanced.json` endpoint. Its expected top-level response contains:
+
+- `projects`: projects on the current page
+- `total_hits`: total projects matching the filters
+- `has_more`: whether another page is available
+- `aggregations`: aggregate filter data supplied by Kickstarter
+- `seed`: Kickstarter's response seed; the actor does not need it for pagination
+
+Each dataset item retains the project's raw scalar fields and adds flattened creator, location, category, URL, image, and formatted-date fields. Nested source objects removed from the output are `creator`, `location`, `category`, `urls`, and `profile`. Optional nested fields are represented by `null` when unavailable.
+
 ### Output example
 ```json
 {  

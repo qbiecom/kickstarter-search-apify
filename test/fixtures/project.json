@@ -1,0 +1,39 @@
+{
+  "id": 123456789,
+  "name": "A Sample Project",
+  "blurb": "A concise project description.",
+  "created_at": 1750000000,
+  "launched_at": 1750100000,
+  "photo": {
+    "full": "https://example.com/project.jpg"
+  },
+  "creator": {
+    "id": 42,
+    "name": "Sample Creator",
+    "avatar": {
+      "medium": "https://example.com/avatar.jpg"
+    },
+    "urls": {
+      "web": {
+        "user": "https://www.kickstarter.com/profile/sample"
+      }
+    }
+  },
+  "location": {
+    "id": 10001,
+    "displayable_name": "New York, NY"
+  },
+  "category": {
+    "id": 273,
+    "name": "Playing Cards",
+    "slug": "games/playing cards"
+  },
+  "urls": {
+    "web": {
+      "project": "https://www.kickstarter.com/projects/sample/a-sample-project"
+    }
+  },
+  "profile": {
+    "id": 1
+  }
+}

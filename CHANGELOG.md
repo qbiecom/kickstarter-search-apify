@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.26] - 2026-09-15
+
+### Changed
+- Documented the expected Kickstarter JSON response and actor output shape.
+- Preserved the existing raw fields and compatibility aliases in project output.
+
+### Fixed
+- Made derived project fields resilient to missing nested data and timestamps.
+
+### Added
+- Added fixture-based tests for normal and incomplete Kickstarter projects.
+
 ## [0.0.25] - 2026-09-15
 
 ### Fixed

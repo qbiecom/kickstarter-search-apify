@@ -26,12 +26,19 @@ function stringifyDiscoverQuery(query) {
     return params.toString();
 }
 
+function formatTimestamp(timestamp) {
+    return Number.isFinite(timestamp) ? moment.unix(timestamp).format(DATE_FORMAT) : null;
+}
+
 // Function to remove unnecessary keys from the item object
-function cleanProject(project) {
+function cleanProject(project = {}) {
+    const image = project.photo?.full ?? null;
+    const blurb = project.blurb ?? '';
+
     // Create a new object with cleaned properties
     const cleanedProject = {
         ...project,
-        image: project.photo?.full ?? null,
+        image,
         creatorId: project.creator?.id ?? null,
         creatorName: project.creator?.name ?? null,
         creatorAvatar: project.creator?.avatar?.medium ?? null,
@@ -42,12 +49,12 @@ function cleanProject(project) {
         categoryName: project.category?.name ?? null,
         categorySlug: project.category?.slug ?? null,
         url: project.urls?.web?.project ?? null,
-        title: project.name,
-        description: `<img src="${project.photo?.full}"> ${project.blurb}`,
+        title: project.name ?? null,
+        description: `${image ? `<img src="${image}"> ` : ''}${blurb}`,
         link: project.urls?.web?.project ?? null,
-        pubDate: moment.unix(project.launched_at).format(DATE_FORMAT),
-        created_at_formatted: moment.unix(project.created_at).format(DATE_FORMAT),
-        launched_at_formatted: moment.unix(project.launched_at).format(DATE_FORMAT),
+        pubDate: formatTimestamp(project.launched_at),
+        created_at_formatted: formatTimestamp(project.created_at),
+        launched_at_formatted: formatTimestamp(project.launched_at),
     };
 
     // Remove unnecessary properties from the cleanedProject object

@@ -1,6 +1,6 @@
 {
 	"name": "kickstarter-search-upcoming",
-	"version": "0.0.25",
+	"version": "0.0.26",
 	"buildTag": "latest",
 	"env": null,
 	"template": "project_empty"
