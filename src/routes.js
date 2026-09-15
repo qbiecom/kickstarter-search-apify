@@ -31,8 +31,10 @@ exports.handleStart = async ({ request, session }, query, requestQueue, proxyCon
 };
 
 exports.handlePagination = async ({ request, session }, requestQueue, proxyConfiguration) => {
+    const requestStartedAt = Date.now();
     let { page, totalProjects, savedProjects } = request.userData;
     const { cookies, maximumResults, savedProjectIds, lastSuccessfulProxyUrl } = request.userData;
+    const reusedProxy = request.retryCount === 0 && !!lastSuccessfulProxyUrl;
 
     log.info('Handling pagination page', { 
         page, 
@@ -40,6 +42,8 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
         sessionId: session.id,
         savedProjects,
         totalProjects,
+        retryCount: request.retryCount,
+        reusedProxy,
     });
 
     // MAKING REQUEST => JSON OBJECT IN RESPONSE
@@ -91,6 +95,13 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
         session.retire();
         throw new Error('Kickstarter returned an unexpected pagination response. Will retry...');
     }
+
+    log.info('Kickstarter pagination request succeeded', {
+        page,
+        retryCount: request.retryCount,
+        reusedProxy,
+        durationMillis: Date.now() - requestStartedAt,
+    });
 
     // ON THE FIRST PAGE WE ARE CHECKING IF WE REACHED THE LIMIT
     if (page === 1) {

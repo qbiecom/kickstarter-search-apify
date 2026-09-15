@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.27] - 2026-09-15
+
+### Changed
+- Reduced the maximum request retries from 1000 to 20 based on observed residential proxy success rates.
+- Added retry count, proxy reuse, and request duration fields to pagination logs.
+- Removed decorative result-limit log lines.
+
 ## [0.0.26] - 2026-09-15
 
 ### Changed

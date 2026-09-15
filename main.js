@@ -49,7 +49,7 @@ Actor.main(async () => {
         requestQueue,
         maxConcurrency: 1,
         useSessionPool: true,
-        maxRequestRetries: 1000,
+        maxRequestRetries: 20,
         minConcurrency: 1,
         maxRequestsPerMinute: 30,
         requestHandler: async (context) => {

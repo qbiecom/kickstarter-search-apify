@@ -252,11 +252,6 @@ async function getSessionCookies(url, session, proxyConfiguration) {
  * @return {Void}
  */
 function notifyAboutMaxResults(foundProjects, limit) {
-    log.info('|');
-    log.info(`| Found ${foundProjects} projects in total.`);
-    log.info(`| Will be output: ${limit} projects.`);
-    log.info('| ');
-    log.info('|');
     log.warning('Search result limit reached', {
         foundProjects,
         limit,

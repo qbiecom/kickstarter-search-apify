@@ -1,11 +1,5 @@
 # TODO
 
-## Request Reliability
-- Keep reusing the last successful proxy for the next page, but measure whether it improves completion time in production runs.
-- Consider adding browser-like request headers matching Kickstarter's frontend fetch if Cloudflare challenge rates remain high.
-- Lower `maxRequestRetries` from `1000` to a more practical default once success rates are understood.
-- Log retry counts and successful proxy reuse in a way that makes production tuning easier.
-
 ## Input And Filters
 - Verify all input filters against the current Kickstarter API: category, status, pledged, goal, raised, sort, query, and location.
 - Confirm whether `raised` is still supported by the current API or should be removed/renamed.
