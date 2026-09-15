@@ -1,11 +1,15 @@
 # Changelog
 
+## [0.0.25] - 2026-09-15
+
+### Fixed
+- Restored `cheerio` as a runtime dependency because the aggregate `crawlee` entry point loads modules that require it during startup.
+
 ## [0.0.24] - 2026-09-15
 
 ### Changed
 - Renamed the discovery warm-up helper to describe its session-cookie role.
 - Removed obsolete seed extraction, fallback generation, and related logging.
-- Removed the unused direct `cheerio` dependency.
 
 ## [0.0.23] - 2026-07-02
 
