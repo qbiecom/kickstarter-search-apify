@@ -47,6 +47,12 @@ test('accepts a category slug', async () => {
     assert.deepEqual(result.category_id, [273]);
 });
 
+test('accepts a newly added category slug', async () => {
+    const result = await parseInput({ category: 'games/ttrpg' });
+
+    assert.deepEqual(result.category_id, [399]);
+});
+
 test('accepts numeric category IDs', async () => {
     const result = await parseInput({ category: 273 });
 

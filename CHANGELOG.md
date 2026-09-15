@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.0.30] - 2026-09-15
+
+### Added
+- Added the Social Practice, Toys, STL, TTRPG, and Audiobooks Kickstarter categories.
+
 ## [0.0.29] - 2026-09-15
 
 ### Added

@@ -1,6 +1,6 @@
 {
 	"name": "kickstarter-search",
-	"version": "0.0.29",
+	"version": "0.0.30",
 	"description": "Kickstarter scraper",
 	"dependencies": {
 		"apify": "^3.7.2",
