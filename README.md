@@ -48,11 +48,11 @@ Input of this actor should be JSON containing filter specification. Allowed filt
 |  **query**| Search term | Any string value, e.g. *Nimbus 2000 project*  |
 | **category** | Category to search in | Category slug from  [this list](https://github.com/gippy/kickstarter-search/blob/master/categories.json) - anything from *books* to *community gardens* |
 |  **location**| Location to search around | Name of the location, e.g. *Prague* |
-|  **status**| Status of the project | *All, Live *or* Successful*|
+|  **status**| Status of the project | *All, Live, Successful or Upcoming*|
 |  **pledged**| Amount pledged |One of: *All, <$1,000 pledged, $1,000 to $10,000 pledged, $10,000 to $100,000 pledged, $100,000 to $1,000,000 pledged and >$1,000,000 pledged*|
 |  **goal**| Goal amount | One of: *All, <$1,000 goal, $1,000 to $10,000 goal, $10,000 to $100,000 goal, $100,000 to $1,000,000 goal and >$1,000,000 goal*|
-|  **raised**| Amount % raised | One of: *All, < 5% raised, 75% to 100% raised, >100% raised*|
-|  **Sort**| Sort by| Popularity,  newest,  end_date,  most_funded or  most_backed|
+|  **raised**| Amount % raised | One of: *All, <75% raised, 75% to 100% raised or >100% raised*|
+|  **sort**| Sort by| popularity, newest, end_date, most_funded, most_backed or magic|
 |  **maxResults**| Maximum number of projects in output | Has to be a positive number, from 0 to 2400 results|
 |  **datasetName**| Name of dataset that will be overwritten with data on each run| Alphabet characters, numbers and dash (e.q. my-dataset)|
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.28] - 2026-09-15
+
+### Fixed
+- Accepted category IDs supplied as numbers as well as strings.
+- Corrected the documented status, percent-raised, and sort options.
+
+### Added
+- Added validation tests for category slugs and numeric category IDs.
+
 ## [0.0.27] - 2026-09-15
 
 ### Changed

@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { test } = require('node:test');
 
 const project = require('./fixtures/project.json');
-const { cleanProject } = require('../src/utils');
+const { cleanProject, parseInput } = require('../src/utils');
 
 test('maps a Kickstarter JSON project to actor output', () => {
     const result = cleanProject(project);
@@ -39,4 +39,16 @@ test('handles missing optional project fields', () => {
     assert.equal(result.pubDate, null);
     assert.equal(result.created_at_formatted, null);
     assert.equal(result.launched_at_formatted, null);
+});
+
+test('accepts a category slug', async () => {
+    const result = await parseInput({ category: 'games/playing cards' });
+
+    assert.deepEqual(result.category_id, [273]);
+});
+
+test('accepts numeric category IDs', async () => {
+    const result = await parseInput({ category: 273 });
+
+    assert.deepEqual(result.category_id, [273]);
 });

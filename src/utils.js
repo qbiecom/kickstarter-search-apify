@@ -130,7 +130,7 @@ async function parseInput(input) {
 
     // process category
     if (filledInFilters.category) {
-        const fromInputLowerCase = filledInFilters.category.toLowerCase();
+        const fromInputLowerCase = String(filledInFilters.category).toLowerCase();
         const foundCategories = categories.filter((category) => {
             return fromInputLowerCase === String(category.id) || fromInputLowerCase === category.slug.toLowerCase();
         });
