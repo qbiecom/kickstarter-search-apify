@@ -26,6 +26,17 @@ function stringifyDiscoverQuery(query) {
     return params.toString();
 }
 
+function isProjectExcluded(project, excludeTerms = []) {
+    const searchableText = `${project.name ?? ''}\n${project.blurb ?? ''}`;
+
+    return excludeTerms.some((term) => {
+        const escapedTerm = term.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        if (!escapedTerm) return false;
+
+        return new RegExp(`(?<![\\p{L}\\p{N}_])${escapedTerm}(?![\\p{L}\\p{N}_])`, 'iu').test(searchableText);
+    });
+}
+
 function formatTimestamp(timestamp) {
     return Number.isFinite(timestamp) ? moment.unix(timestamp).format(DATE_FORMAT) : null;
 }
@@ -317,6 +328,7 @@ const proxyConfiguration = async ({
 
 module.exports = {
     cleanProject,
+    isProjectExcluded,
     parseInput,
     getSessionCookies,
     stringifyDiscoverQuery,

@@ -19,12 +19,16 @@ Actor.main(async () => {
         goal: input?.goal,
         raised: input?.raised,
         sort: input?.sort,
+        excludeTerms: input?.excludeTerms,
     });
     
     // GETTING PARAMS FROM THE INPUT
     const queryParameters = await parseInput(input);
     let { maxResults } = input;
     const { proxyConfig } = input;
+    const excludeTerms = Array.isArray(input.excludeTerms)
+        ? input.excludeTerms.map((term) => String(term).trim()).filter(Boolean)
+        : [];
 
     const proxy = await proxyConfiguration({ proxyConfig });
     if (!maxResults) maxResults = 200 * PROJECTS_PER_PAGE;
@@ -58,7 +62,7 @@ Actor.main(async () => {
             // eslint-disable-next-line default-case
             switch (label) {
                 case 'START':
-                    return handleStart(context, queryParameters, requestQueue, proxy, maxResults);
+                    return handleStart(context, queryParameters, requestQueue, proxy, maxResults, excludeTerms);
                 case 'PAGINATION-LIST':
                     return handlePagination(context, requestQueue, proxy);
             }

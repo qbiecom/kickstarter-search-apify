@@ -47,6 +47,7 @@ Input of this actor should be JSON containing filter specification. Allowed filt
 |--|--|--|
 |  **query**| Search term | Any string value, e.g. *Nimbus 2000 project*  |
 | **category** | Category to search in | Category slug from  [this list](https://github.com/gippy/kickstarter-search/blob/master/categories.json) - anything from *books* to *community gardens* |
+| **excludeTerms** | Terms to exclude from project titles and descriptions | An array of whole words or phrases, e.g. `["STL", "3D printable"]` |
 |  **location**| Location to search around | Name of the location, e.g. *Prague* |
 |  **status**| Status of the project | *All, Live, Successful or Upcoming*|
 |  **pledged**| Amount pledged |One of: *All, <$1,000 pledged, $1,000 to $10,000 pledged, $10,000 to $100,000 pledged, $100,000 to $1,000,000 pledged and >$1,000,000 pledged*|
@@ -60,22 +61,25 @@ Input of this actor should be JSON containing filter specification. Allowed filt
 
 ```json
 {
-    "query":  "Board games",  "
-    maxResults":  100,  
-    "category":  "games",  
-    "location":  "United States",  
-    "sort":  "newest",  "proxyConfig":  
-    {  "useApifyProxy":  true  },  
-    "status":  "Successful",  
-    "pledged":  "$1,000 to $10,000 pledged",  
-    "goal":  "$1,000 to $10,000 goal",  
-    "raised":  "All",  
-    "datasetName":  ""
+    "query": "Board games",
+    "maxResults": 100,
+    "excludeTerms": ["STL", "3D printable"],
+    "category": "games",
+    "location": "United States",
+    "sort": "newest",
+    "proxyConfig": { "useApifyProxy": true },
+    "status": "Successful",
+    "pledged": "$1,000 to $10,000 pledged",
+    "goal": "$1,000 to $10,000 goal",
+    "raised": "All",
+    "datasetName": ""
 }
 ```
 ### Important considerations 
 
  - **maxResults**  - Kickstarter website can return a maximum of 200 pages, so at most, you will get 2400 results for any query. To get over 2400 results, run multiple instances of this actor with more specific search terms.
+
+ - **excludeTerms** - Matching is case-insensitive and requires whole word or phrase boundaries. For example, `STL` excludes "STL miniatures" but does not exclude "Castle". Excluded projects do not count toward `maxResults`, so the actor continues pagination until it collects the requested number of matching projects or Kickstarter has no more pages.
 
  - **datasetName** - If you provide name to a named dataset, every time you run this Kickstarter search actor, it will clear the existing dataset and rewrite it with new data. You can use this option if you want to use named dataset as RSS feed or if you are creating an API.
 

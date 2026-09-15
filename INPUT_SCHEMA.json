@@ -9,6 +9,16 @@
           "description": "What to search Kickstarter for",
           "editor": "textfield"
       },
+      "excludeTerms": {
+          "title": "Exclude terms",
+          "type": "array",
+          "description": "Exclude projects containing any whole word or phrase in the title or description",
+          "editor": "stringList",
+          "default": [],
+          "items": {
+              "type": "string"
+          }
+      },
       "maxResults": {
           "title": "Maximum results",
           "type": "integer",

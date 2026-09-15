@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { test } = require('node:test');
 
 const project = require('./fixtures/project.json');
-const { cleanProject, parseInput } = require('../src/utils');
+const { cleanProject, isProjectExcluded, parseInput } = require('../src/utils');
 
 test('maps a Kickstarter JSON project to actor output', () => {
     const result = cleanProject(project);
@@ -51,4 +51,11 @@ test('accepts numeric category IDs', async () => {
     const result = await parseInput({ category: 273 });
 
     assert.deepEqual(result.category_id, [273]);
+});
+
+test('excludes whole words case-insensitively from titles and descriptions', () => {
+    assert.equal(isProjectExcluded({ name: 'Premium STL Miniatures' }, ['stl']), true);
+    assert.equal(isProjectExcluded({ blurb: 'Includes printable STL files.' }, ['STL']), true);
+    assert.equal(isProjectExcluded({ name: 'Castle Adventure' }, ['STL']), false);
+    assert.equal(isProjectExcluded({ blurb: 'A 3D printable adventure.' }, ['3D printable']), true);
 });

@@ -8,10 +8,10 @@ async function getGotScraping() {
     return _gotScrapingModule;
 }
 
-const { cleanProject, getSessionCookies, notifyAboutMaxResults, stringifyDiscoverQuery } = require('./utils');
+const { cleanProject, getSessionCookies, isProjectExcluded, notifyAboutMaxResults, stringifyDiscoverQuery } = require('./utils');
 const { DISCOVER_JSON_URL, MAX_PAGES, PROJECTS_PER_PAGE } = require('./consts');
 
-exports.handleStart = async ({ request, session }, query, requestQueue, proxyConfig, maxResults) => {
+exports.handleStart = async ({ request, session }, query, requestQueue, proxyConfig, maxResults, excludeTerms) => {
     const cookies = await getSessionCookies(request.url, session, proxyConfig);
     const page = 1;
     const params = stringifyDiscoverQuery({ ...query, page });
@@ -26,6 +26,7 @@ exports.handleStart = async ({ request, session }, query, requestQueue, proxyCon
             savedProjects: 0,
             maximumResults: Math.min(maxResults, MAX_PAGES * PROJECTS_PER_PAGE),
             savedProjectIds: [],
+            excludeTerms,
         },
     });
 };
@@ -33,7 +34,7 @@ exports.handleStart = async ({ request, session }, query, requestQueue, proxyCon
 exports.handlePagination = async ({ request, session }, requestQueue, proxyConfiguration) => {
     const requestStartedAt = Date.now();
     let { page, totalProjects, savedProjects } = request.userData;
-    const { cookies, maximumResults, savedProjectIds, lastSuccessfulProxyUrl } = request.userData;
+    const { cookies, excludeTerms, maximumResults, savedProjectIds, lastSuccessfulProxyUrl } = request.userData;
     const reusedProxy = request.retryCount === 0 && !!lastSuccessfulProxyUrl;
 
     log.info('Handling pagination page', { 
@@ -123,7 +124,12 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
     });
     let projectsToSave;
     try {
-        projectsToSave = body.projects.slice(0, maximumResults - savedProjects)
+        const eligibleProjects = body.projects.filter((project) => !isProjectExcluded(project, excludeTerms));
+        const excludedProjects = body.projects.length - eligibleProjects.length;
+        if (excludedProjects > 0) {
+            log.info(`Page ${page}: Excluded ${excludedProjects} projects.`, { page, excludedProjects });
+        }
+        projectsToSave = eligibleProjects.slice(0, maximumResults - savedProjects)
             .map(cleanProject);
     } catch (e) {
         log.error('Failed to process projects from page', {
@@ -182,6 +188,7 @@ exports.handlePagination = async ({ request, session }, requestQueue, proxyConfi
                 totalProjects,
                 savedProjectIds,
                 cookies,
+                excludeTerms,
                 lastSuccessfulProxyUrl: proxyUrl,
             },
         });

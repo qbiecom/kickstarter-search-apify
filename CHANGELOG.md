@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.29] - 2026-09-15
+
+### Added
+- Added `excludeTerms` to exclude projects containing specified whole words or phrases in their title or description.
+- Added exclusion matching tests, including protection against substring matches such as `STL` in `Castle`.
+
+### Fixed
+- Corrected the README input example so it is valid JSON.
+
 ## [0.0.28] - 2026-09-15
 
 ### Fixed
