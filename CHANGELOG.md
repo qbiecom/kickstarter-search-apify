@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.24] - 2026-09-15
+
+### Changed
+- Renamed the discovery warm-up helper to describe its session-cookie role.
+- Removed obsolete seed extraction, fallback generation, and related logging.
+- Removed the unused direct `cheerio` dependency.
+
 ## [0.0.23] - 2026-07-02
 
 ### Changed

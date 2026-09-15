@@ -8,49 +8,24 @@ async function getGotScraping() {
     return _gotScrapingModule;
 }
 
-const { cleanProject, getToken, notifyAboutMaxResults, stringifyDiscoverQuery } = require('./utils');
+const { cleanProject, getSessionCookies, notifyAboutMaxResults, stringifyDiscoverQuery } = require('./utils');
 const { DISCOVER_JSON_URL, MAX_PAGES, PROJECTS_PER_PAGE } = require('./consts');
 
 exports.handleStart = async ({ request, session }, query, requestQueue, proxyConfig, maxResults) => {
-    log.info('Handling START phase - getting TOKEN and COOKIES', { 
-        url: request.url,
-        sessionId: session.id,
-    });
-    
-    // on this phase - getting TOKEN AND COOKIES
-    const { seed, cookies } = await getToken(request.url, session, proxyConfig);
-
-    log.info('Token and cookies obtained successfully', { seed, sessionId: session.id });
-
+    const cookies = await getSessionCookies(request.url, session, proxyConfig);
     const page = 1;
-    const totalProjects = 0;
-    const savedProjects = 0;
-    const maximumResults = Math.min(maxResults, MAX_PAGES * PROJECTS_PER_PAGE);
-    const savedProjectIds = [];
+    const params = stringifyDiscoverQuery({ ...query, page });
 
-    const params = stringifyDiscoverQuery({
-        ...query,
-        page,
-    });
-    const listUrl = `${DISCOVER_JSON_URL}${params}`;
-
-    log.info('Adding first pagination page to queue', { 
-        listUrl, 
-        page, 
-        maximumResults,
-    });
-
-    // ADDING TO THE QUEUE FIRST PAGINATION PAGE WITH JSON
     await requestQueue.addRequest({
-        url: listUrl,
+        url: `${DISCOVER_JSON_URL}${params}`,
         userData: {
             cookies,
             page,
             label: 'PAGINATION-LIST',
-            totalProjects,
-            savedProjects,
-            maximumResults,
-            savedProjectIds,
+            totalProjects: 0,
+            savedProjects: 0,
+            maximumResults: Math.min(maxResults, MAX_PAGES * PROJECTS_PER_PAGE),
+            savedProjectIds: [],
         },
     });
 };

@@ -1,10 +1,9 @@
 {
 	"name": "kickstarter-search",
-	"version": "0.0.23",
+	"version": "0.0.24",
 	"description": "Kickstarter scraper",
 	"dependencies": {
 		"apify": "^3.7.2",
-		"cheerio": "^1.2.0",
 		"crawlee": "^3.17.0",
 		"got-scraping": "^4.2.1",
 		"moment": "^2.30.1"

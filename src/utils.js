@@ -1,39 +1,14 @@
 const { Actor, log } = require('apify');
 const moment = require('moment');
-const cheerio = require('cheerio');
-/* got-scraping v3+ is ESM-only. Dynamically import it at runtime so this CommonJS project keeps working.
-   getGotScraping() returns a module object with { gotScraping } and caches the import. */
+
+const { EMPTY_SELECT, LOCATION_SEARCH_ACTOR_ID, DEFAULT_SORT_ORDER, DATE_FORMAT } = require('./consts');
+const { statuses, categories, pledges, goals, raised, sorts } = require('./filters');
+
 let _gotScrapingModule = null;
 async function getGotScraping() {
     if (_gotScrapingModule) return _gotScrapingModule;
     _gotScrapingModule = await import('got-scraping');
     return _gotScrapingModule;
-}
-
-const { EMPTY_SELECT, LOCATION_SEARCH_ACTOR_ID, DEFAULT_SORT_ORDER, DATE_FORMAT } = require('./consts');
-const { statuses, categories, pledges, goals, raised, sorts } = require('./filters');
-
-function extractSeedFromHtml(html) {
-    const $ = cheerio.load(html);
-    const seedFromAttribute = $('[data-seed]').first().attr('data-seed');
-    if (seedFromAttribute) return seedFromAttribute;
-
-    const seedPatterns = [
-        /["']seed["']\s*:\s*["']?([0-9.]+)["']?/i,
-        /[?&]seed=([0-9.]+)/i,
-        /data-seed=["']([0-9.]+)["']/i,
-    ];
-
-    for (const pattern of seedPatterns) {
-        const match = html.match(pattern);
-        if (match) return match[1];
-    }
-
-    return null;
-}
-
-function createSeed() {
-    return Math.random().toFixed(6).slice(2);
 }
 
 function stringifyDiscoverQuery(query) {
@@ -247,16 +222,8 @@ async function parseInput(input) {
     return queryParams;
 }
 
-// Function to get token and cookies for requests
-async function getToken(url, session, proxyConfiguration) {
+async function getSessionCookies(url, session, proxyConfiguration) {
     const proxyUrl = await proxyConfiguration.newUrl(session.id);
-    
-    log.info('Fetching token and cookies', {
-        url,
-        sessionId: session.id,
-    });
-    
-    // Query the url and load csrf token from it
     const { gotScraping } = await getGotScraping();
     const response = await gotScraping({
         url,
@@ -264,40 +231,9 @@ async function getToken(url, session, proxyConfiguration) {
         responseType: 'text',
     });
 
-    // Load the seed and cookies from the HTML response
-    const extractedSeed = extractSeedFromHtml(response.body);
-    const seed = extractedSeed || createSeed();
-    const cookies = (response.headers['set-cookie'] || []).map((s) => s.split(';', 2)[0]).join('; ');
-    if (!extractedSeed) {
-        log.info('Could not resolve seed from page markup. Continuing with current discover JSON endpoint.', {
-            url,
-            statusCode: response.statusCode,
-            bodyLength: response.body ? response.body.length : 0,
-            sessionId: session.id,
-        });
-    }
-    if (!seed) {
-        log.error('Could not resolve seed from page. Will retry with a new session/proxy.', {
-            url,
-            hasBody: !!response.body,
-            bodyLength: response.body ? response.body.length : 0,
-            statusCode: response.statusCode,
-            sessionId: session.id,
-        });
-        if (response.statusCode === 403) session.retire();
-        throw new Error('Could not resolve seed. Will retry...')
-    }
-    
-    log.info('Token and cookies extracted successfully', {
-        hasSeed: !!seed,
-        hasCookies: !!cookies,
-        cookieCount: cookies ? cookies.split(';').length : 0,
-    });
-    
-    return {
-        seed,
-        cookies,
-    };
+    return (response.headers['set-cookie'] || [])
+        .map((cookie) => cookie.split(';', 2)[0])
+        .join('; ');
 }
 
 // Function to inform about the item limit on Kickstarter search
@@ -380,7 +316,7 @@ const proxyConfiguration = async ({
 module.exports = {
     cleanProject,
     parseInput,
-    getToken,
+    getSessionCookies,
     stringifyDiscoverQuery,
     notifyAboutMaxResults,
     proxyConfiguration,

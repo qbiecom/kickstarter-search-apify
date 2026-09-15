@@ -36,15 +36,11 @@ Actor.main(async () => {
     
     log.info('Starting search with URL:', { firstUrl });
     
-    // ADDING TO THE QUEUE FIRST PAGE TO GET TOKEN
     await requestQueue.addRequest({
         url: firstUrl,
         userData: {
             page: 1,
             label: 'START',
-            searchResults: [],
-            itemsToSave: [],
-            savedItems: 0,
             maxResults,
         },
     });
